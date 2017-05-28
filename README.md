@@ -14,3 +14,4 @@ frsstl is a Header-only implement of the c++ standard library, in order to under
 
 - Yeah, there wont be wiki.
 - Some functions are missing
+- And its not thread safe right now.
