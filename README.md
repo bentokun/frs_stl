@@ -14,5 +14,5 @@ frsstl is a Header-only implement of the c++ standard library, in order to under
 
 - Yeah, there wont be wiki.
 - Some functions are missing
-- And its not thread safe right now.
+- And its not thread safe right now, or you must managed it. There will be a thread, mutex and semaphore class soon.
 - The reason i write this library becauses of the goddamn dll warning. Although i cant disable it :P
