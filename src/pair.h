@@ -2,6 +2,7 @@
 
 namespace FRS {
 
+
 	template <typename T1, typename T2>
 	struct pair {
 	protected:

@@ -24,6 +24,7 @@ namespace FRS {
 	public:
 
 		typedef T* Iterator;
+		typedef T* Reserve_Iterator;
 
 		/*
 			@ Method      : begin
@@ -43,6 +44,14 @@ namespace FRS {
 		*/
 		Iterator end()   {
 			return m_array + m_count;
+		}
+
+		Reserve_Iterator rbegin() {
+			return m_array + m_count;
+		}
+
+		Reserve_Iterator rend() {
+			return m_array;
 		}
 
 		/*
@@ -66,14 +75,14 @@ namespace FRS {
 		}
 
 		
-		vector(uint32 m_num, T m_data) {
-			m_count    = m_num;
-			m_capacity = m_num;
+		vector(uint32 p_num, T p_data) {
+			m_count    = p_num;
+			m_capacity = p_num;
 
 			m_array    = new T[m_capacity];
 
-			for (int32 i = 0; i < m_num; i++) {
-				m_array[i] = m_data;
+			for (int32 i = 0; i < p_num; i++) {
+				m_array[i] = p_data;
 			}
 		}
 
@@ -89,12 +98,12 @@ namespace FRS {
 
 		/*
 			@ Operator    : []
-			@ Description : Get the element at n_num of array
+			@ Description : Get the element at p_num of array
 			@ Date        : 05/27/2017 | 7:57 AM
 			@ Method      : Not baby.
 		*/
-		T operator [](uint32 m_num) {
-			return m_array[m_num];
+		T operator [](uint32 p_num) {
+			return m_array[p_num];
 		};
 
 		/*
@@ -138,12 +147,12 @@ namespace FRS {
 							equal or bigger than the capacity, we reserve
 							it by the size plus 5.
 		*/
-		void push_back(T m_para) {
+		void push_back(T p_data) {
 			if ((m_count >= m_capacity)) {
 				reserve(m_capacity + 5);
 			}
 
-			m_array[m_count++] = m_para;
+			m_array[m_count++] = p_data;
 		};
 
 		/*
@@ -153,7 +162,7 @@ namespace FRS {
 			@ Method      : -------------------------------------
 							Pop_back is easier. Just subtract the size by one.
 		*/
-		void pop_back(T m_para) {
+		void pop_back() {
 			m_count--;
 		};
 
@@ -167,21 +176,21 @@ namespace FRS {
 							copy the old array to new array and replace
 							it. Pretty much like swapping.
 		*/
-		void reserve(uint32 m_new_capacity) {
+		void reserve(uint32 p_new_capacity) {
 			if (m_array == nullptr) {
 				m_count    = 0;
 				m_capacity = 0;
 			}
 
-			T*     newArray    = new T[m_new_capacity];
-			uint32 newSize     = m_new_capacity < m_count ? m_new_capacity : m_count;
+			T*     newArray    = new T[p_new_capacity];
+			uint32 newSize     = p_new_capacity < m_count ? p_new_capacity : m_count;
 			if (m_count != 0)
 				mem_copy(newArray, m_array, m_count * sizeof(T));
 
-			m_capacity = m_new_capacity;
+			m_capacity = p_new_capacity;
 			delete[]     m_array;
 
-			m_array = new T[m_new_capacity];
+			m_array = new T[p_new_capacity];
 
 			m_array    = newArray;
 		};
@@ -192,12 +201,12 @@ namespace FRS {
 			@ Date        : 05/27/2017 | 8:26 AM
 			@ Method      : -------------------
 							Change the capacity of the
-							array by n_num, than set the size
-							by n_num
+							array by p_num, than set the size
+							by p_num
 		*/
-		void resize(int32 n_num) {
-			reserve(n_num);
-			m_count = n_num;
+		void resize(int32 p_num) {
+			reserve(p_num);
+			m_count = p_num;
 		};
 
 		/*
@@ -229,7 +238,7 @@ namespace FRS {
 
 		/*
 			@ Method      : erase
-			@ Description : erase elements from m_begin to m_end
+			@ Description : erase elements from p_begin to p_end
 			@ Date        : 05/27/2017 | 9:04 AM
 			@ Method      : move the memory from the past - end 
 							of the delete to the begin of the 
@@ -239,11 +248,11 @@ namespace FRS {
 
 							if we want to erase the element 3 to 5, 
 							which means 2, 3, 5, get the number of element
-							remains not delete by get end() - m_end, than move:
+							remains not delete by get end() - p_end, than move:
 
 							0 1 |2 3 5| 6
 							
-							Remaining end() - m_end = 1
+							Remaining end() - p_end = 1
 
 							Command: 
 							mem_move_c(3, 5+1, 1);
@@ -252,29 +261,121 @@ namespace FRS {
 
 							0 1 6 3 5 6
 
-							Delete the size by m_end - m_begin + 1
+							Delete the size by p_end - p_begin + 1
 
 							Result:
 
 							0 1 6
 		*/
-		void erase(Iterator m_begin, Iterator m_end) {
-			uint32 a = end() - m_end - 1;
-			mem_move_c(m_begin, m_end + 1, (end() - m_end) * sizeof(T));
-			m_count -= m_end - m_begin + 1;
+		void erase(Iterator p_begin, Iterator p_end) {
+			mem_move_c(p_begin, p_end + 1, (end() - p_end) * sizeof(T));
+			m_count -= p_end - p_begin + 1;
 
 		}
 
 		/*
 			
 			@ Method      : erase
-			@ Description : erase elements from m_begin to m_end
+			@ Description : erase elements at p_pos
 			@ Date        : 05/27/2017 | 9:04 AM
 			@ Method      : erase with m_end = m_begin + 1
 		*/
 
-		void erase(Iterator m_begin) {
-			erase(m_begin, m_begin + 1);
+		void erase(Iterator p_pos) {
+			erase(p_pos, p_pos + 1);
+		}
+
+		/*
+
+		@ Method      : erase
+		@ Description : erase elements at p_pos
+		@ Date        : 05/27/2017 | 9:04 AM
+		@ Method      : erase with m_end = m_begin + 1
+		*/
+
+		void erase(uint32 p_pos) {
+			erase(begin() + p_pos);
+		}
+
+		/*
+
+		@ Method      : erase
+		@ Description : erase elements from m_begin to m_end
+		@ Date        : 05/27/2017 | 9:04 AM
+		@ Method      : erase with m_end = m_begin + 1
+		*/
+
+		void erase(uint32 p_begin, uint32 p_end) {
+			erase(begin() + p_begin, begin() + p_end);
+		}
+
+		/*
+
+			@ Method      : insert
+			@ Description : insert data from p_begin to p_end
+			@ Date        : 06/06/2017 | 1:29 PM
+			@ Method      : 
+				caculate if the capacity is enough, or else
+				reserve it. 
+				Then we move the part (from p_begin to the end 
+				of the array) to the p_end
+				Then, there will be space for the data. Parse the
+				data there.
+		*/
+
+		void insert(T data, Iterator p_begin, Iterator p_end) {
+
+			int32 t_new_size = p_end - p_begin;
+
+			if (m_count + t_new_size >= m_capacity) {
+				reserve(m_count + t_new_size + 5);
+			}
+
+			mem_move_c(p_end, p_begin, (end() - p_begin) * sizeof(T));
+
+			Iterator t_begin = p_begin;
+
+			for (uint32 i = 0; i < p_end - p_begin; i++) {
+				*t_begin++ = data;
+			}
+
+			m_count += t_new_size;
+		}
+
+		/*
+
+			@ Method      : insert
+			@ Description : insert data at p_pos
+			@ Date        : 06/06/2017 | 1:31 PM
+			@ Method      :
+				Wrapper
+		*/
+		void insert(T data, Iterator p_pos) {
+			insert(data, p_pos, p_pos + 1);
+		}
+
+		/*
+
+			@ Method      : insert
+			@ Description : insert data from p_begin to p_end
+			@ Date        : 06/06/2017 | 1:31 PM
+			@ Method      :
+				Wrapper
+		*/
+		void insert(T data, uint32 p_begin, uint32 p_end) {
+			insert(data, begin() + p_begin, begin() + p_end);
+		}
+
+		/*
+
+			@ Method      : insert
+			@ Description : insert data at p_pos
+			@ Date        : 06/06/2017 | 1:31 PM
+			@ Method      :
+			Wrapper
+		*/
+		void insert(T data, uint32 p_pos) {
+			insert(data, p_pos);
 		}
 
 		/*
@@ -292,7 +393,8 @@ namespace FRS {
 			@ Date        : 05/27/2017 | 7:52 AM
 			@ Method      : Nah.
 		*/
-		vector<T> operator = (vector<T> m_para) {
+		void operator = (vector &m_para) {
+
 			delete[] m_array;
 
 			m_count		= m_para.m_count;
@@ -300,9 +402,8 @@ namespace FRS {
 
 			m_array		= new T[m_capacity];
 
-			for (uint32 i = 0; i < m_count; i++) {
-				m_array[i] = m_para.m_array[i];
-			}
+			mem_copy(m_array, m_para.m_array, m_count * sizeof(T));
+
 		}
 	};
 
