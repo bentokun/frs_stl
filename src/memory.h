@@ -4,7 +4,6 @@
 
 #include <nmmintrin.h>
 
-
 namespace FRS {
 
 	/*
@@ -22,16 +21,23 @@ namespace FRS {
 		if (src == dest || size == 0)
 			return;
 
-		uint32 loops = (size / sizeof(*src));
-		uint32 destSize = sizeof(*dest);
+		size64 loops = (size / sizeof(*src));
+		size64 destSize = sizeof(*dest);
 
 		auto m_dest = dest;
 		auto m_src = src;
 
-		for (uint32 i = 0; i < loops; i++) {
+		for (size64 i = 0; i < loops; i++) {
 			*m_dest++ = *m_src++;
 		}
 	}
+
+	template <typename T>
+	void fill(T* dest, T data, uint32 num_element) {
+		for (uint64 i = 0; i < num_element; i++) {
+			*dest++ = data;
+		}
+	};
 
 	/*
 		@ Function    : mem_copy
@@ -50,9 +56,9 @@ namespace FRS {
 		uint8* pDes = static_cast<uint8*>(dest);
 		uint8* pSrc = static_cast<uint8*>(src);
 
-		uint32 loops = (size / sizeof(uint32));
+		size64 loops = (size / sizeof(uint32));
 
-		for (uint32 index = 0; index < loops; ++index) {
+		for (size64 index = 0; index < loops; ++index) {
 			*(reinterpret_cast<uint32*>(pDes)) = *(reinterpret_cast<uint32*>(pSrc));
 			pDes += sizeof(uint32);
 			pSrc += sizeof(uint32);

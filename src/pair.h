@@ -18,14 +18,15 @@ namespace FRS {
 			m_data = m_paradata;
 		}
 
-		pair<T1, T2> operator = (pair<T1, T2> m_pair) {
-			pair<T1, T2> m_temppair;
-
-			m_temppair.m_data = m_pair.m_data;
-			m_temppair.m_key  = m_pair.m_key;
-
-			return m_temppair;
+		pair(pair& p_pair) {
+			m_data = p_pair.m_data;
+			m_key = p_pair.m_key;
 		}
+
+		void operator = (pair<T1, T2>& m_pair) {
+			m_data = m_pair.m_data;
+			m_key  = m_pair.m_key;
+		} 
 
 		T1& first() {
 			return m_key;
@@ -63,29 +64,24 @@ namespace FRS {
 			return (*this > m_pair) || (*this == m_pair);
 		}
 
-		void swap(pair<T1, T2>* m_pair) {
+		void swap(pair<T1, T2>& m_pair) {
 
-			T1 m_tempKey = m_key;
-			m_key = m_pair->m_key;
-			m_pair->m_key = m_tempKey;
+			T1 m_tempKey(m_key);
+			m_key = m_pair.m_key;
+			m_pair.m_key = m_tempKey;
 
-			T2 m_tempData = m_data;
-			m_data = m_pair->m_data;
-			m_pair->m_data = m_tempData;
+			T2 m_tempData(m_data);
+			m_data = m_pair.m_data;
+			m_pair.m_data = m_tempData;
 
 		};
 
-		
+
 	};
 
 	template <typename T1, typename T2>
-	pair<T1, T2> make_pair(T1 m_parakey, T2 m_paradata) {
-		pair<T1, T2> m_datapair;
-
-		m_datapair.first()  = m_parakey;
-		m_datapair.second() = m_paradata;
-
-		return m_datapair;
+	pair<T1, T2> make_pair(T1& m_parakey, T2& m_paradata) {
+		return pair<T1, T2>(m_parakey, m_paradata);
 	};
 
 }

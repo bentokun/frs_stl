@@ -30,6 +30,11 @@ namespace FRS {
 			m_data			= m_para2;
 		}
 
+		tuple(tuple& p_pair) {
+			m_data = p_pair.m_data;
+			m_key = p_pair.m_key;
+		}
+
 		/*
 			@ Method      : first
 			@ Description : Get/set of the key
@@ -90,13 +95,9 @@ namespace FRS {
 			@ Description : Equal? Idk
 			@ Date        : 05/27/2017 | 8:34 AM
 		*/
-		tuple<T1, T2, T3> operator = (tuple<T1, T2, T3> m_pair) {
-			tuple<T1, T2, T3> m_temppair;
-
-			m_temppair.m_data = m_pair.m_data;
-			m_temppair.m_key = m_pair.m_key;
-
-			return m_temppair;
+		void operator = (tuple<T1, T2, T3> m_pair) {
+			m_data = m_pair.m_data;
+			m_key = m_pair.m_key;
 		}
 
 		/*
@@ -135,27 +136,24 @@ namespace FRS {
 			return !((*this) < m_tuple) || ((*this) == m_tuple);
 		}
 		
+		void swap(tuple<T1, T2, T3>& m_pair) {
+
+			T1 m_tempKey(m_key);
+			m_key = m_pair.m_key;
+			m_pair.m_key = m_tempKey;
+
+			m_data.swap(m_pair.m_data);
+
+		};
 	};
 
 	template <typename T1, typename T2, typename T3>
-	tuple<T1, T2, T3> make_tuple(T1 m_para1, T2 m_para2, T3 m_para3) {
-		tuple<T1, T2, T3> m_temptuple;
-
-		m_temptuple.first() = m_para1;
-		m_temptuple.second() = m_para2;
-		m_temptuple.third() = m_para3;
-
-		return m_temptuple;
+	tuple<T1, T2, T3> make_tuple(T1& m_para1, T2& m_para2, T3& m_para3) {
+		return tuple<T1, T2, T3>(m_para1, m_para2, m_para3);
 	}
 
 	template <typename T1, typename T2, typename T3>
-	tuple<T1, T2, T3> make_tuple(T1 m_para1, pair<T2,T3> m_para2) {
-		tuple<T1, T2, T3> m_temptuple;
-
-		m_temptuple.first() = m_para1;
-		m_temptuple.second() = m_para2.first();
-		m_temptuple.third() = m_para2.second();
-
-		return m_temptuple;
+	tuple<T1, T2, T3> make_tuple(T1& m_para1, pair<T2,T3>& m_para2) {
+		return tuple<T1, T2, T3>(m_para1, m_para2);
 	}
 }

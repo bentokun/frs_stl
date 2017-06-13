@@ -1,27 +1,32 @@
 #pragma once
+#pragma once
 
+#include "rules.h"
 #include "allocator.h"
+#include "memory.h"
+#include "swap.h"
 
 namespace FRS {
 
-	template <class T, class Allocator = default_allocator<T>>
-	class basic_string {
+	/*
+	@ Class       : container_base<T>
+	@ Description : template class managing an array of
+	typename T
+	@ Date        : 05/27/2017 | 8:34 AM
+	@ Method      : Using new and delete to implement class.
+	*/
+	template <typename T, typename Allocator = default_allocator<T>>
+	class container_base {
 	protected:
+
 		T* m_array;
-		uint32 m_length;
+		uint32 m_count;
 		uint32 m_capacity;
 
 	public:
 
 		typedef T* Iterator;
 		typedef T* Reserve_Iterator;
-
-		/*
-		@ Operator    : =
-		@ Date        : 05/27/2017 | 7:52 AM
-		@ Method      : Nah.
-		*/
-		void operator = (basic_string &m_para);
 
 		/*
 		@ Method      : begin
@@ -40,11 +45,11 @@ namespace FRS {
 		@ Method      : Not baby.
 		*/
 		Iterator end() {
-			return m_array + m_length;
+			return m_array + m_count;
 		}
 
 		Reserve_Iterator rbegin() {
-			return m_array + m_length;
+			return m_array + m_count;
 		}
 
 		Reserve_Iterator rend() {
@@ -68,63 +73,43 @@ namespace FRS {
 		@ Method      : Not baby.
 		*/
 		T back() {
-			return m_array[m_length - 1];
+			return m_array[m_count - 1];
 		}
 
-		basic_string(basic_string& p_ant) {
-			m_length = p_ant.m_length;
-			m_capacity = p_ant.m_capacity;
+
+		container_base(uint32 p_num, T p_data) {
+			m_count = p_num;
+			m_capacity = p_num;
 
 			m_array = Allocator::alloc(m_capacity * sizeof(T));
 
-			mem_copy(m_array, p_ant.m_array, m_length * sizeof(T));
-			m_array[m_length] = '\0';
+			memset(m_array, 0, m_capacity * sizeof(T));
+
+			for (int32 i = 0; i < p_num; i++) {
+				m_array[i] = p_data;
+			}
 		}
 
-		basic_string(const T* p_data) {
-			size_t length = 0;
-
-			while (p_data[length])
-				length++;
-
-			m_capacity = length + 5;
-			m_length = length;
-
-			m_array = Allocator::alloc(m_capacity * sizeof(T));
-
-			mem_copy(m_array, p_data, length);
-			m_array[m_length] = '\0';
-		}
-
-		basic_string(uint32 length, uint32 capacity, const T* p_data) {
-			m_capacity = capacity;
-			m_length = length;
-
-			m_array = Allocator::alloc(m_capacity * sizeof(T));
-
-			mem_copy(m_array, p_data, length);
-			m_array[m_length] = '\0';
-		}
-
-		basic_string() {
+		container_base() {
 			m_array = nullptr;
-			m_length = 0;
+			m_count = 0;
 			m_capacity = 0;
 		}
 
-		~basic_string() {
-			Allocator::free(m_array);
+		container_base(container_base& p_vec) {
+			m_count = p_vec.m_count;
+			m_capacity = p_vec.m_capacity;
+
+			m_array = Allocator::alloc(m_capacity * sizeof(T));
+
+			memset(m_array, 0, m_capacity * sizeof(T));
+
+			mem_copy(m_array, p_vec.m_array, m_count * sizeof(T));
 		}
 
-		/*
-		@ Operator    : []
-		@ Description : Get the element at n_num of array
-		@ Date        : 05/27/2017 | 7:57 AM
-		@ Method      : Not baby.
-		*/
-		T operator [](uint32 p_num) {
-			return m_array[p_num];
-		};
+		~container_base() {
+			Allocator::free(m_array);
+		}
 
 		/*
 		@ Method      : data
@@ -142,8 +127,8 @@ namespace FRS {
 		@ Date        : 05/27/2017 | 7:58 AM
 		@ Method      : Not baby.
 		*/
-		uint32 length() {
-			return m_length;
+		uint32 count() {
+			return m_count;
 		}
 
 		/*
@@ -167,12 +152,12 @@ namespace FRS {
 		equal or bigger than the capacity, we reserve
 		it by the size plus 5.
 		*/
-		void push_back(T m_para) {
-			if ((m_length >= m_capacity)) {
+		virtual void push_back(T p_data) {
+			if ((m_count >= m_capacity)) {
 				reserve(m_capacity + 5);
 			}
 
-			m_array[m_length++] = m_para;
+			m_array[m_count++] = p_data;
 		};
 
 		/*
@@ -182,8 +167,8 @@ namespace FRS {
 		@ Method      : -------------------------------------
 		Pop_back is easier. Just subtract the size by one.
 		*/
-		void pop_back(T m_para) {
-			m_length--;
+		virtual void pop_back() {
+			m_count--;
 		};
 
 		/*
@@ -196,25 +181,25 @@ namespace FRS {
 		copy the old array to new array and replace
 		it. Pretty much like swapping.
 		*/
-		void reserve(uint32 m_new_capacity) {
+		void reserve(uint32 p_new_capacity) {
 			if (m_array == nullptr) {
-				m_length = 0;
+				m_count = 0;
 				m_capacity = 0;
 			}
 
-			T*     newArray = Allocator::alloc(m_new_capacity * sizeof(T));
-			uint32 newSize = m_new_capacity < m_length ? m_new_capacity : m_length;
-			
-			if (m_length != 0)
-				mem_copy(newArray, m_array, m_length * sizeof(T));
+			T*     newArray = Allocator::alloc(p_new_capacity * sizeof(T));
+			uint32 newSize = p_new_capacity < m_count ? p_new_capacity : m_count;
+		
+			memset(newArray, 0, p_new_capacity * sizeof(T));
 
-			m_capacity = m_new_capacity;
+			if (m_count != 0)
+				mem_copy(newArray, m_array, m_count * sizeof(T));
+
+			m_capacity = p_new_capacity;
 			Allocator::free(m_array);
 
-			m_array = Allocator::alloc(m_capacity * sizeof(T));
-
+			m_array = Allocator::alloc(p_new_capacity * sizeof(T));
 			m_array = newArray;
-			m_array[m_length] = '\0';
 		};
 
 		/*
@@ -223,12 +208,12 @@ namespace FRS {
 		@ Date        : 05/27/2017 | 8:26 AM
 		@ Method      : -------------------
 		Change the capacity of the
-		array by n_num, than set the size
-		by n_num
+		array by p_num, than set the size
+		by p_num
 		*/
-		void resize(int32 n_num) {
-			reserve(n_num);
-			m_length = n_num;
+		void resize(int32 p_num) {
+			reserve(p_num);
+			m_count = p_num;
 		};
 
 		/*
@@ -237,12 +222,12 @@ namespace FRS {
 		@ Date        : 05/27/2017 | 6:16 PM
 		@ Method      : -------------------
 		Change the capacity of the
-		array by m_length, than set the capacity
-		by m_length
+		array by m_count, than set the capacity
+		by m_count
 		*/
 		void shrink_to_fit() {
-			reserve(m_length);
-			m_capacity = m_length;
+			reserve(m_count);
+			m_capacity = m_count;
 		}
 
 		/*
@@ -252,7 +237,7 @@ namespace FRS {
 		@ Method      : Nope tbh
 		*/
 		void clear() {
-			m_length = 0;
+			m_count = 0;
 			m_capacity = 0;
 
 			m_array = nullptr;
@@ -260,7 +245,7 @@ namespace FRS {
 
 		/*
 		@ Method      : erase
-		@ Description : erase elements from m_begin to m_end
+		@ Description : erase elements from p_begin to p_end
 		@ Date        : 05/27/2017 | 9:04 AM
 		@ Method      : move the memory from the past - end
 		of the delete to the begin of the
@@ -270,11 +255,11 @@ namespace FRS {
 
 		if we want to erase the element 3 to 5,
 		which means 2, 3, 5, get the number of element
-		remains not delete by get end() - m_end, than move:
+		remains not delete by get end() - p_end, than move:
 
 		0 1 |2 3 5| 6
 
-		Remaining end() - m_end = 1
+		Remaining end() - p_end = 1
 
 		Command:
 		mem_move_c(3, 5+1, 1);
@@ -283,30 +268,30 @@ namespace FRS {
 
 		0 1 6 3 5 6
 
-		Delete the size by m_end - m_begin + 1
+		Delete the size by p_end - p_begin + 1
 
 		Result:
 
 		0 1 6
 		*/
-		void erase(Iterator m_begin, Iterator m_end) {
-			uint32 a = end() - m_end - 1;
-			mem_move_c(m_begin, m_end + 1, (end() - m_end) * sizeof(T));
-			m_length -= m_end - m_begin + 1;
+		void erase(Iterator p_begin, Iterator p_end) {
+			mem_move_c(p_begin, p_end + 1, (end() - p_end) * sizeof(T));
+			m_count -= p_end - p_begin + 1;
 
 		}
 
 		/*
 
 		@ Method      : erase
-		@ Description : erase elements from m_begin to m_end
+		@ Description : erase elements at p_pos
 		@ Date        : 05/27/2017 | 9:04 AM
 		@ Method      : erase with m_end = m_begin + 1
 		*/
 
-		void erase(Iterator m_begin) {
-			erase(m_begin, m_begin + 1);
+		void erase(Iterator p_pos) {
+			erase(p_pos, p_pos + 1);
 		}
+
 		/*
 
 		@ Method      : erase
@@ -349,8 +334,8 @@ namespace FRS {
 
 			int32 t_new_size = p_end - p_begin;
 
-			if (m_length + t_new_size >= m_capacity) {
-				reserve(m_length + t_new_size + 5);
+			if (m_count + t_new_size >= m_capacity) {
+				reserve(m_count + t_new_size + 5);
 			}
 
 			mem_move_c(p_end, p_begin, (end() - p_begin) * sizeof(T));
@@ -361,8 +346,8 @@ namespace FRS {
 				*t_begin++ = data;
 			}
 
-			m_length += t_new_size;
-			m_capacity = m_length + t_new_size + 5;
+			m_count += t_new_size;
+			m_capacity = m_count + t_new_size + 5;
 		}
 
 		/*
@@ -408,81 +393,26 @@ namespace FRS {
 		@ Method      : Not really. Only checks if size is 0
 		*/
 		bool is_empty() {
-			return (m_length == 0);
+			return (m_count == 0);
 		}
 
-		friend basic_string<T> operator + (basic_string<T>& m_para1, basic_string<T>& m_para2) {
-			
-			auto t_length = m_para1.length() + m_para2.length();
-			auto t_capacity = m_para1.capacity() + m_para2.capacity() + 7;
-			T* t_array = Allocator::alloc(t_capacity * sizeof(T));
 
-			mem_copy(t_array, m_para1.data(), m_para1.length() * sizeof(T));
-			mem_move_c(t_array + m_para1.length(), m_para2.data(), m_para2.length() * sizeof(T));
+		/*
+		@ Operator    : =
+		@ Date        : 05/27/2017 | 7:52 AM
+		@ Method      : Nah.
+		*/
+		void operator = (container_base &m_para) {
+			Allocator::free(m_array);
 
-			t_array[t_length] = '\0';
+			m_count = m_para.m_count;
+			m_capacity = m_para.m_capacity;
 
-			return basic_string<T>(t_length, t_capacity, t_array);
+			m_array = Allocator::alloc(m_capacity * sizeof(T));
+
+			mem_copy(m_array, m_para.m_array, m_count * sizeof(T));
+
 		}
-
-		void operator += (basic_string& m_para) {
-			
-			uint32 t_new_size = m_para.length() + m_length;
-
-			if (t_new_size >= m_capacity)
-				reserve(t_new_size + 7);
-
-			mem_move_c(m_array + m_length, m_para.m_array, m_para.m_length * sizeof(T));
-
-			m_length = t_new_size;
-			m_capacity = t_new_size + 7;
-		}
-
-		void operator += (const T* m_para) {
-			*this += string(m_para);
-		};
-
-		uint32 find(basic_string& p_find) {
-			basic_string t_merge = p_find + basic_string("|") + *this;
-
-			for (uint32_t i = 0; i < m_length; i++) {
-				uint32 t_patternLength = 0;
-
-				uint32_t t_up = 0;
-
-				for (uint32_t j = i; j < m_length; j++, t_up++) {
-
-					if (t_merge.m_array[t_up] == t_merge.m_array[j]) {
-						++t_patternLength;
-					}
-					else 
-						break;
-				}
-
-				if (t_patternLength == p_find.m_length) {
-					return i - p_find.m_length - 1;
-				}
-
-			}
-
-			return -1;
-		}
-
 	};
-
-	template <typename T, typename Allocator = default_allocator<T>>
-	void basic_string<T, Allocator>::operator = (basic_string &m_para) {
-		Allocator::free(m_array);
-
-		m_length = m_para.m_length;
-		m_capacity = m_para.m_capacity;
-
-		m_array = Allocator::alloc(m_capacity * sizeof(T));
-
-		mem_copy(m_array, m_para.m_array, m_length * sizeof(T));
-
-	}
-
-	typedef basic_string<char> string;
 
 }
